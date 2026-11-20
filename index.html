@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+<title>AVANGARD Agency</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0a0a0a; --bg-card: #111111; --bg-card2: #161616; --bg-input: #1a1a1a;
+    --white: #f0f0f0; --gray: #888; --gray2: #555; --gray3: #333;
+    --red: #c0392b; --red-light: #e74c3c; --red-dark: #922b21; --red-bg: rgba(192,57,43,0.12);
+    --green: #27ae60; --green-dark: #1e8449;
+    --border: #1e1e1e; --border2: #2a2a2a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; overflow-x: hidden; }
+
+  .app-geo { position: fixed; pointer-events: none; z-index: 0; max-width: 420px; width: 100%; left: 50%; transform: translateX(-50%); height: 100vh; overflow: hidden; }
+  .geo-tri-1 { position: absolute; top: -30px; right: -20px; width: 0; height: 0; border-left: 80px solid transparent; border-right: 80px solid transparent; border-bottom: 140px solid var(--red); opacity: 0.04; }
+  .geo-circ-1 { position: absolute; bottom: 100px; left: -60px; width: 180px; height: 180px; border: 2px solid var(--red); border-radius: 50%; opacity: 0.05; }
+  .geo-line-1 { position: absolute; top: 35%; right: -30px; width: 120px; height: 2px; background: var(--red); transform: rotate(45deg); opacity: 0.06; }
+  .geo-sq-1 { position: absolute; top: 55%; right: 15px; width: 40px; height: 40px; border: 1.5px solid var(--white); transform: rotate(15deg); opacity: 0.04; }
+  .geo-diamond-1 { position: absolute; top: 25%; left: 10px; width: 30px; height: 30px; background: var(--red); transform: rotate(45deg); opacity: 0.03; }
+  .geo-circ-2 { position: absolute; top: 15%; right: 40px; width: 60px; height: 60px; border: 1px solid var(--red); border-radius: 50%; opacity: 0.05; }
+  .geo-line-2 { position: absolute; bottom: 200px; left: 20px; width: 80px; height: 1px; background: var(--white); opacity: 0.04; }
+  .geo-line-3 { position: absolute; top: 45%; left: 30px; width: 1px; height: 60px; background: var(--red); opacity: 0.05; }
+  .geo-sq-2 { position: absolute; bottom: 150px; left: 20px; width: 25px; height: 25px; border: 1px solid var(--red); transform: rotate(30deg); opacity: 0.06; }
+  .geo-dot-1 { position: absolute; top: 70%; right: 60px; width: 8px; height: 8px; background: var(--red); border-radius: 50%; opacity: 0.08; }
+  .geo-sq-3 { position: absolute; top: 80%; right: -40px; width: 100px; height: 100px; border: 1px solid var(--red); transform: rotate(20deg); opacity: 0.03; }
+
+  .app { position: relative; z-index: 1; max-width: 420px; margin: 0 auto; min-height: 100vh; padding-bottom: 80px; }
+
+  .header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--border); background: rgba(10,10,10,0.95); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 10; }
+  .header-logo-wrap { display: flex; align-items: center; gap: 10px; }
+  .header-logo-svg { width: 28px; height: 28px; }
+  .header-logo-text { font-family: 'Space Grotesk', sans-serif; font-weight: 300; font-size: 16px; letter-spacing: 4px; text-transform: uppercase; color: var(--white); white-space: nowrap; }
+
+  .profile { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; }
+  .profile-left { display: flex; align-items: center; gap: 14px; }
+  .avatar { width: 46px; height: 46px; border-radius: 14px; background: linear-gradient(135deg, var(--red-dark), var(--red)); display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 18px; color: white; }
+  .profile-name { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 15px; }
+  .profile-role { font-size: 11px; color: var(--gray); margin-top: 3px; display: inline-block; padding: 2px 8px; background: var(--bg-card2); border-radius: 4px; border: 1px solid var(--border); }
+  .profile-balance { text-align: right; }
+  .balance-amount { font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 700; color: var(--green); }
+  .balance-label { font-size: 10px; color: var(--gray); margin-top: 2px; }
+
+  .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 0 20px; margin-bottom: 14px; }
+  .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 10px; text-align: center; position: relative; overflow: hidden; }
+  .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--red), transparent); }
+  .stat-value { font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 700; }
+  .stat-value.green { color: var(--green); }
+  .stat-value.red { color: var(--red-light); }
+  .stat-value.white { color: var(--white); }
+  .stat-label { font-size: 10px; color: var(--gray); margin-top: 4px; }
+
+  .accent-line { height: 2px; background: linear-gradient(90deg, var(--red), var(--red-dark), transparent); margin: 0 20px 14px; border-radius: 2px; }
+
+  .section { padding: 0 20px; margin-bottom: 14px; }
+  .section-title { font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 600; color: var(--gray); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .section-title::before { content: ''; width: 3px; height: 14px; background: var(--red); border-radius: 2px; }
+
+  .payment-block { background: linear-gradient(135deg, var(--bg-card) 0%, #151515 100%); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 10px; position: relative; overflow: hidden; }
+  .payment-block::before { content: ''; position: absolute; top: -30px; right: -30px; width: 80px; height: 80px; border: 2px solid var(--red); border-radius: 50%; opacity: 0.08; }
+  .payment-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; position: relative; z-index: 1; }
+  .payment-period-label { font-size: 10px; color: var(--gray); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .payment-period-dates { font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 600; color: var(--white); }
+  .payment-days-left { background: var(--red-bg); border: 1px solid rgba(192,57,43,0.3); color: var(--red-light); font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
+  .payment-amount-row { display: flex; justify-content: space-between; align-items: baseline; padding: 14px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); position: relative; z-index: 1; }
+  .payment-amount-label { font-size: 11px; color: var(--gray); }
+  .payment-amount-value { font-family: 'Space Grotesk', sans-serif; font-size: 28px; font-weight: 700; color: var(--green); }
+  .payment-bottom { display: flex; align-items: center; margin-top: 14px; position: relative; z-index: 1; }
+  .payment-date-badge { background: var(--bg-input); border: 1px solid var(--border2); border-radius: 8px; padding: 8px 12px; }
+  .payment-date-badge-text { font-size: 12px; font-weight: 600; color: var(--white); }
+  .payment-date-badge-sub { font-size: 9px; color: var(--gray); display: block; margin-top: 1px; }
+  .payment-progress { flex: 1; margin-left: 14px; }
+  .payment-progress-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .payment-progress-fill { height: 100%; background: linear-gradient(90deg, var(--red), var(--green)); border-radius: 2px; transition: width 0.5s; }
+  .payment-progress-text { font-size: 9px; color: var(--gray); margin-top: 4px; text-align: right; }
+
+  .percent-block { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 10px; position: relative; overflow: hidden; }
+  .percent-block::after { content: ''; position: absolute; bottom: -10px; right: 20px; width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-bottom: 25px solid var(--red); opacity: 0.05; }
+  .percent-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .percent-current { display: flex; align-items: baseline; gap: 6px; }
+  .percent-current-label { font-size: 10px; color: var(--gray); text-transform: uppercase; letter-spacing: 1px; }
+  .percent-current-value { font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 700; color: var(--red-light); }
+  .percent-next-badge { font-size: 10px; color: var(--gray2); background: var(--bg-input); padding: 3px 8px; border-radius: 4px; border: 1px solid var(--border2); }
+  .percent-tiers { display: flex; gap: 4px; margin-bottom: 10px; }
+  .percent-tier { flex: 1; height: 6px; border-radius: 3px; background: var(--border); transition: background 0.3s; }
+  .percent-tier.active { background: var(--red); }
+  .percent-info { display: flex; justify-content: space-between; align-items: center; }
+  .percent-progress-text { font-size: 11px; color: var(--gray); }
+  .percent-progress-text strong { color: var(--white); font-weight: 600; }
+  .percent-next-amount { font-size: 11px; color: var(--green); font-weight: 600; }
+
+  .models-empty { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 20px; text-align: center; position: relative; overflow: hidden; }
+  .models-empty::after { content: ''; position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-bottom: 30px solid var(--red); opacity: 0.05; }
+  .models-empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.6; }
+  .models-empty-title { font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 600; color: var(--white); margin-bottom: 6px; }
+  .models-empty-text { font-size: 12px; color: var(--gray); line-height: 1.5; }
+
+  .team-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 8px; position: relative; overflow: hidden; }
+  .team-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .team-name { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 15px; }
+  .team-percent { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 13px; color: var(--red-light); background: var(--red-bg); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(192, 57, 43, 0.25); }
+  .team-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+  .team-stat { text-align: center; padding: 8px 4px; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border); }
+  .team-stat-val { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 15px; }
+  .team-stat-val.green { color: var(--green); }
+  .team-stat-val.white { color: var(--white); }
+  .team-stat-val.red { color: var(--red-light); }
+  .team-stat-label { font-size: 9px; color: var(--gray); margin-top: 2px; }
+
+  .admin-btn { display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); border: 1px solid var(--red-dark); border-radius: 14px; padding: 14px 16px; margin-bottom: 8px; cursor: pointer; text-decoration: none; color: var(--white); transition: all 0.2s; }
+  .admin-btn:active { border-color: var(--red); transform: scale(0.98); }
+  .admin-btn-left { display: flex; align-items: center; gap: 12px; }
+  .admin-btn-icon { width: 36px; height: 36px; background: var(--red-bg); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .admin-btn-text { font-weight: 600; font-size: 14px; }
+  .admin-btn-sub { font-size: 11px; color: var(--gray); margin-top: 2px; }
+  .admin-btn-arrow { color: var(--gray); font-size: 18px; }
+
+  .ref-block, .wallet-block, .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 8px; }
+  .ref-label, .wallet-label { font-size: 10px; color: var(--gray); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .ref-link-box { display: flex; align-items: center; background: var(--bg-input); border: 1px solid var(--border2); border-radius: 10px; padding: 10px 12px; gap: 8px; }
+  .ref-link { flex: 1; font-size: 12px; color: var(--red-light); word-break: break-all; font-family: monospace; }
+  .ref-copy { background: var(--red-dark); color: white; border: none; border-radius: 8px; padding: 8px 12px; font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .ref-copy:active { background: var(--red); }
+  .ref-hint { font-size: 11px; color: var(--gray2); margin-top: 8px; }
+  .wallet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .wallet-change { background: var(--bg-input); border: 1px solid var(--border2); color: var(--white); border-radius: 8px; padding: 6px 12px; font-size: 11px; cursor: pointer; }
+  .wallet-change:active { border-color: var(--red); }
+  .wallet-address { font-family: monospace; font-size: 12px; color: var(--gray); word-break: break-all; }
+
+  .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 420px; background: rgba(17,17,17,0.95); backdrop-filter: blur(10px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 6px 0 10px; z-index: 100; }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 6px 10px; border-radius: 10px; transition: all 0.2s; border: none; background: none; color: var(--gray2); }
+  .nav-item.active { color: var(--red-light); }
+  .nav-icon-wrap { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; transition: background 0.2s; }
+  .nav-item.active .nav-icon-wrap { background: var(--red-bg); }
+  .nav-icon { font-size: 16px; }
+  .nav-label { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .page { display: none; animation: fadeIn 0.2s ease; }
+  .page.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 11px; color: var(--gray); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
+  .form-input, .form-select, .form-textarea { width: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; color: var(--white); font-size: 14px; font-family: 'Inter', sans-serif; outline: none; transition: border-color 0.2s; }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--red); }
+  .form-input::placeholder, .form-textarea::placeholder { color: var(--gray3); }
+  .form-textarea { min-height: 80px; resize: vertical; }
+
+  .platform-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 10px; }
+  .platform-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 14px; color: var(--white); }
+  .platform-logo { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; overflow: visible; flex-shrink: 0; }
+  .platform-logo.cb { background: transparent; }
+  .platform-logo.sc { background: transparent; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  .file-upload-area { background: var(--bg-card); border: 1px dashed var(--border2); border-radius: 14px; padding: 20px 16px; margin-bottom: 12px; text-align: center; cursor: pointer; transition: all 0.2s; }
+  .file-upload-area:active { border-color: var(--red); background: var(--red-bg); }
+  .file-upload-area.has-files { border-style: solid; border-color: var(--green); background: rgba(39, 174, 96, 0.05); }
+  .file-upload-icon { font-size: 28px; margin-bottom: 8px; opacity: 0.5; }
+  .file-upload-text { font-size: 13px; color: var(--gray); margin-bottom: 4px; font-weight: 500; }
+  .file-upload-hint { font-size: 10px; color: var(--gray2); line-height: 1.4; }
+  .file-upload-input { display: none; }
+  .file-preview-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; justify-content: center; }
+  .file-preview-item { width: 56px; height: 56px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border2); position: relative; }
+  .file-preview-item img { width: 100%; height: 100%; object-fit: cover; }
+  .file-preview-remove { position: absolute; top: 2px; right: 2px; width: 16px; height: 16px; background: var(--red); border: none; border-radius: 50%; color: white; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+  .submit-btn { width: 100%; background: linear-gradient(135deg, var(--red-dark), var(--red)); color: white; border: none; border-radius: 12px; padding: 14px; font-size: 14px; font-weight: 700; font-family: 'Space Grotesk', sans-serif; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: transform 0.1s; }
+  .submit-btn:active { transform: scale(0.98); }
+  .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  .history-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .history-table { width: 100%; min-width: 360px; border-collapse: collapse; font-size: 11px; }
+  .history-table th { text-align: left; padding: 8px 6px; color: var(--gray); font-weight: 500; border-bottom: 1px solid var(--border); font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; cursor: pointer; user-select: none; }
+  .history-table th:active { color: var(--red-light); }
+  .history-table th.sort-asc::after { content: ' ↑'; color: var(--red-light); }
+  .history-table th.sort-desc::after { content: ' ↓'; color: var(--red-light); }
+  .history-table td { padding: 10px 6px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  .val-green { color: var(--green); font-weight: 600; }
+  .val-white { font-weight: 600; }
+  .val-red { color: var(--red-light); font-weight: 600; }
+
+  .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--red); color: white; padding: 12px 24px; border-radius: 10px; font-size: 13px; font-weight: 600; z-index: 300; transition: transform 0.3s; white-space: nowrap; }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  
+  .loading-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 40px; text-align: center; }
+  .loading-spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--red); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 16px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-title { font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+  .loading-subtitle { font-size: 13px; color: var(--gray); }
+
+  .status-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; margin-left: 8px; }
+  .status-badge.demo { background: rgba(241, 196, 15, 0.2); color: #f1c40f; border: 1px solid rgba(241, 196, 15, 0.3); }
+  .status-badge.online { background: rgba(39, 174, 96, 0.2); color: var(--green); border: 1px solid rgba(39, 174, 96, 0.3); }
+
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+  .days-pulse { animation: pulse 2s ease-in-out infinite; }
+
+  .shifts-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .shift-menu-btn { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 16px; cursor: pointer; transition: all 0.25s ease; position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: flex-start; min-height: 140px; }
+  .shift-menu-btn::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--red), transparent); }
+  .shift-menu-btn::after { content: ''; position: absolute; top: -15px; right: -15px; width: 50px; height: 50px; border: 1.5px solid var(--red); opacity: 0.15; transform: rotate(45deg); transition: all 0.3s; }
+  .shift-menu-btn:active { border-color: var(--red); background: linear-gradient(135deg, var(--bg-card) 0%, rgba(192,57,43,0.05) 100%); transform: scale(0.98); }
+  .shift-menu-btn:active::after { opacity: 0.3; transform: rotate(45deg) scale(1.1); }
+  .shift-menu-icon { width: 44px; height: 44px; margin-bottom: 14px; position: relative; display: flex; align-items: center; justify-content: center; }
+  .shift-menu-icon::before { content: ''; position: absolute; width: 4px; height: 4px; background: var(--red); border-radius: 50%; top: 0; right: 0; }
+  .shift-menu-btn-title { font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 600; color: var(--white); margin-bottom: 4px; line-height: 1.2; }
+  .shift-menu-btn-sub { font-size: 10px; color: var(--gray); letter-spacing: 0.3px; }
+  .shift-menu-arrow { position: absolute; bottom: 16px; right: 16px; width: 20px; height: 20px; opacity: 0.4; transition: all 0.25s; }
+  .shift-menu-btn:active .shift-menu-arrow { opacity: 1; transform: translateX(3px); }
+
+  .history-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .history-filter-select { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; color: var(--white); font-size: 12px; font-family: 'Inter', sans-serif; outline: none; appearance: none; cursor: pointer; }
+
+  .history-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
+  .history-card:active { border-color: var(--red); transform: scale(0.98); }
+  .history-card::after { content: '›'; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--gray2); font-size: 20px; }
+  .history-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .history-card-model { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 14px; }
+  .history-card-date { font-size: 11px; color: var(--gray); }
+  .history-card-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+  .history-card-stat { text-align: center; padding: 6px; background: var(--bg-input); border-radius: 6px; }
+  .history-card-stat-val { font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700; }
+  .history-card-stat-val.green { color: var(--green); }
+  .history-card-stat-val.white { color: var(--white); }
+  .history-card-stat-label { font-size: 9px; color: var(--gray); margin-top: 2px; }
+  .history-card-files { font-size: 10px; color: var(--gray2); margin-top: 8px; display: flex; align-items: center; gap: 4px; }
+
+  .back-btn { display: flex; align-items: center; gap: 8px; background: none; border: none; color: var(--gray); font-size: 13px; cursor: pointer; padding: 8px 0; margin-bottom: 12px; font-family: 'Inter', sans-serif; }
+  .back-btn:active { color: var(--white); }
+
+  .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 200; align-items: flex-end; justify-content: center; }
+  .modal-overlay.active { display: flex; }
+  .modal { background: var(--bg); border: 1px solid var(--border); border-radius: 20px 20px 0 0; width: 100%; max-width: 420px; max-height: 85vh; overflow-y: auto; padding: 24px 20px 30px; animation: slideUp 0.3s ease; }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .modal-title { font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 700; }
+  .modal-close { background: none; border: none; color: var(--gray); font-size: 20px; cursor: pointer; }
+  .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .detail-row-label { color: var(--gray); }
+  .detail-row-value { font-weight: 600; color: var(--white); }
+  .detail-row-value.green { color: var(--green); }
+  .detail-section-title { font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; letter-spacing: 1px; margin: 16px 0 10px; display: flex; align-items: center; gap: 8px; }
+  .detail-section-title::before { content: ''; width: 3px; height: 12px; background: var(--red); border-radius: 2px; }
+  .detail-comment { background: var(--bg-input); border: 1px solid var(--border); border-radius: 10px; padding: 12px; font-size: 13px; color: var(--white); line-height: 1.5; white-space: pre-wrap; }
+  .detail-comment.empty { color: var(--gray2); font-style: italic; }
+  .detail-photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .detail-photo { width: 100%; aspect-ratio: 1; border-radius: 8px; overflow: hidden; border: 1px solid var(--border2); cursor: pointer; }
+  .detail-photo img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* ===== ДИНАМИКА СТАТИСТИКИ (ОБНОВЛЁННАЯ) ===== */
+  .stats-chart-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 10px; position: relative; overflow: hidden; }
+  .stats-chart-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--green), transparent); }
+  .stats-chart-title { font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 600; color: var(--gray); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .stats-chart-title::before { content: ''; width: 3px; height: 14px; background: var(--green); border-radius: 2px; }
+
+  .period-row { display: flex; gap: 6px; margin-bottom: 10px; }
+  .period-btn { flex: 1; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; padding: 9px 4px; font-size: 11px; font-weight: 600; color: var(--gray); cursor: pointer; transition: all 0.2s; text-align: center; white-space: nowrap; font-family: 'Space Grotesk', sans-serif; }
+  .period-btn:active { transform: scale(0.95); }
+  .period-btn.active { background: var(--red-bg); border-color: var(--red); color: var(--red-light); }
+
+  .sub-select-row { display: none; margin-bottom: 10px; animation: fadeIn 0.2s ease; }
+  .sub-select-row.visible { display: block; }
+  .sub-select-label { font-size: 9px; color: var(--gray2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; display: block; }
+  .sub-select { width: 100%; background: var(--bg-input); border: 1px solid var(--border2); border-radius: 8px; padding: 11px 12px; color: var(--white); font-size: 13px; font-family: 'Inter', sans-serif; outline: none; appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
+  .sub-select:focus { border-color: var(--red); }
+
+  .view-row { display: flex; gap: 6px; margin-bottom: 10px; }
+  .view-btn { flex: 1; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; padding: 9px 10px; font-size: 11px; font-weight: 500; color: var(--gray); cursor: pointer; transition: all 0.2s; text-align: center; font-family: 'Inter', sans-serif; }
+  .view-btn:active { transform: scale(0.95); }
+  .view-btn.active { background: var(--bg-card2); border-color: var(--gray2); color: var(--white); }
+
+  .chart-area { height: 200px; position: relative; margin-top: 6px; border-top: 1px solid var(--border); padding-top: 20px; }
+  .chart-bar { position: absolute; bottom: 30px; width: 20px; background: linear-gradient(to top, var(--green-dark), var(--green)); border-radius: 3px 3px 0 0; transition: height 0.5s ease; }
+  .chart-bar-label { position: absolute; bottom: 8px; font-size: 9px; color: var(--gray2); text-align: center; width: 34px; transform: translateX(-50%); }
+  .chart-value-label { position: absolute; font-size: 9px; color: var(--green); font-weight: 600; text-align: center; width: 50px; transform: translateX(-50%); }
+  .chart-empty { text-align: center; padding: 50px 20px; color: var(--gray2); font-size: 12px; }
+
+  .chart-summary { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .chart-summary-item { text-align: center; padding: 8px 4px; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border); }
+  .chart-summary-val { font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 700; }
+  .chart-summary-val.green { color: var(--green); }
+  .chart-summary-val.white { color: var(--white); }
+  .chart-summary-label { font-size: 9px; color: var(--gray); margin-top: 2px; }
+
+  /* ===== ПАНЕЛЬ КОЛОНОК ===== */
+  .table-controls-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 10px; position: relative; overflow: hidden; }
+  .table-controls-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--red), transparent); }
+  .table-controls-title { font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 600; color: var(--gray); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .table-controls-title::before { content: ''; width: 3px; height: 14px; background: var(--red); border-radius: 2px; }
+
+  .column-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .column-chip { background: var(--bg-input); border: 1px solid var(--border); border-radius: 20px; padding: 7px 12px; font-size: 11px; font-weight: 500; color: var(--gray); cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; user-select: none; }
+  .column-chip:active { transform: scale(0.95); }
+  .column-chip.active { background: var(--red-bg); border-color: var(--red); color: var(--red-light); }
+  .column-chip.all-btn { font-weight: 600; border-color: var(--gray2); }
+  .column-chip.all-btn.active { background: var(--red); color: white; border-color: var(--red); }
+
+  .table-actions { display: flex; gap: 6px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .table-action-btn { flex: 1; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; padding: 8px; font-size: 10px; font-weight: 600; color: var(--gray); cursor: pointer; transition: all 0.2s; text-align: center; font-family: 'Space Grotesk', sans-serif; text-transform: uppercase; letter-spacing: 0.5px; }
+  .table-action-btn:active { transform: scale(0.95); }
+  .table-action-btn:hover { border-color: var(--red); color: var(--red-light); }
+
+  .table-container { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 10px; }
+  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .shifts-table { width: 100%; min-width: 300px; border-collapse: collapse; font-size: 11px; }
+  .shifts-table th { text-align: left; padding: 10px 8px; color: var(--gray); font-weight: 600; border-bottom: 1px solid var(--border); font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; cursor: pointer; user-select: none; transition: color 0.2s; }
+  .shifts-table th:active { color: var(--red-light); }
+  .shifts-table th.sort-asc::after { content: ' ↑'; color: var(--red-light); }
+  .shifts-table th.sort-desc::after { content: ' ↓'; color: var(--red-light); }
+  .shifts-table td { padding: 10px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  .shifts-table tr:last-child td { border-bottom: none; }
+  .shifts-table tr:active { background: var(--red-bg); }
+</style>
+</head>
+<body>
+
+<div class="app-geo">
+  <div class="geo-tri-1"></div><div class="geo-circ-1"></div><div class="geo-line-1"></div><div class="geo-sq-1"></div>
+  <div class="geo-diamond-1"></div><div class="geo-circ-2"></div><div class="geo-line-2"></div><div class="geo-line-3"></div>
+  <div class="geo-sq-2"></div><div class="geo-dot-1"></div><div class="geo-sq-3"></div>
+</div>
+
+<div class="loading-screen" id="loadingScreen">
+  <svg width="50" height="50" viewBox="0 0 200 200" fill="none" style="margin-bottom:20px;">
+    <line x1="100" y1="20" x2="100" y2="90" stroke="#f0f0f0" stroke-width="2"/>
+    <circle cx="135" cy="40" r="18" fill="#f0f0f0"/>
+    <path d="M 60 130 L 100 70 L 140 130 Z" fill="#f0f0f0" opacity="0.9"/>
+    <rect x="100" y="110" width="40" height="40" fill="#f0f0f0" opacity="0.7"/>
+  </svg>
+  <div class="loading-title">AVANGARD</div>
+  <div class="loading-subtitle" id="loadingStatus">Инициализация...</div>
+  <div class="loading-spinner" id="loadingSpinner"></div>
+</div>
+
+<div class="app" id="mainApp" style="display:none;">
+  <div class="header">
+    <div class="header-logo-wrap">
+      <svg class="header-logo-svg" viewBox="0 0 200 200" fill="none">
+        <line x1="100" y1="20" x2="100" y2="90" stroke="#f0f0f0" stroke-width="2"/>
+        <circle cx="135" cy="40" r="18" fill="#f0f0f0"/>
+        <path d="M 60 130 L 100 70 L 140 130 Z" fill="#f0f0f0" opacity="0.9"/>
+        <rect x="100" y="110" width="40" height="40" fill="#f0f0f0" opacity="0.7"/>
+      </svg>
+      <div class="header-logo-text">AVANGARD AGENCY</div>
+      <span class="status-badge" id="statusBadge">DEMO</span>
+    </div>
+  </div>
+
+  <div class="profile">
+    <div class="profile-left">
+      <div class="avatar" id="userAvatar">?</div>
+      <div><div class="profile-name" id="userName">Загрузка...</div><div class="profile-role" id="userRole">Оператор</div></div>
+    </div>
+    <div class="profile-balance"><div class="balance-amount" id="totalBalance">$0.00</div><div class="balance-label">ожидает выплаты</div></div>
+  </div>
+
+  <div class="page active" id="page-home">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-value white" id="statStreamers">0</div><div class="stat-label">Моделей</div></div>
+      <div class="stat-card"><div class="stat-value red" id="statPercent">20%</div><div class="stat-label">Ваш текущий процент</div></div>
+      <div class="stat-card"><div class="stat-value green" id="statTotalEarned">$0</div><div class="stat-label">Всего заработано</div></div>
+    </div>
+    <div class="accent-line"></div>
+    <div class="section">
+      <div class="payment-block">
+        <div class="payment-top">
+          <div><div class="payment-period-label">Текущий период</div><div class="payment-period-dates" id="payPeriodDates">—</div></div>
+          <div class="payment-days-left days-pulse" id="payDaysLeft">—</div>
+        </div>
+        <div class="payment-amount-row">
+          <div class="payment-amount-label">К выплате по текущему проценту:</div>
+          <div class="payment-amount-value" id="payAmount">$0.00</div>
+        </div>
+        <div class="payment-bottom">
+          <div class="payment-date-badge"><div><div class="payment-date-badge-text" id="payDateText">—</div><div class="payment-date-badge-sub">Дата отправки</div></div></div>
+          <div class="payment-progress"><div class="payment-progress-bar"><div class="payment-progress-fill" id="payProgressFill" style="width: 0%"></div></div><div class="payment-progress-text" id="payProgressText">—</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="percent-block">
+        <div class="percent-header">
+          <div class="percent-current"><div class="percent-current-label">Ваш текущий процент</div><div class="percent-current-value" id="percentCurrentValue">20%</div></div>
+          <div class="percent-next-badge" id="percentNextBadge">до 22.5%</div>
+        </div>
+        <div class="percent-tiers" id="percentTiers"><div class="percent-tier active"></div><div class="percent-tier"></div><div class="percent-tier"></div></div>
+        <div class="percent-info"><div class="percent-progress-text">Оборот периода: <strong id="percentTurnover">$0</strong></div><div class="percent-next-amount" id="percentNextAmount">до след. уровня: $2000</div></div>
+      </div>
+    </div>
+    <div class="section" id="teamSection"><div class="section-title">Мои модели</div><div id="teamList"></div></div>
+    <div class="section">
+      <div class="admin-btn" onclick="openAdminChat()">
+        <div class="admin-btn-left"><div class="admin-btn-icon">💬</div><div><div class="admin-btn-text">Связаться с руководством</div><div class="admin-btn-sub">Чат с @AvangardoAgency</div></div></div>
+        <div class="admin-btn-arrow">›</div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="ref-block">
+        <div class="ref-label">Реферальная ссылка</div>
+        <div class="ref-link-box"><div class="ref-link" id="refLink">https://t.me/AvangardStudiobot?start=REF123</div><button class="ref-copy" onclick="copyRef()">Копировать</button></div>
+        <div class="ref-hint">Зарабатывай до $1000 за каждую приведённую тобой модель!</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-shifts">
+    <div id="shiftsMenuView">
+      <div class="section">
+        <div class="section-title">Отчёты</div>
+        <div class="shifts-menu">
+          <div class="shift-menu-btn" onclick="showShiftsView('new')">
+            <div class="shift-menu-icon">
+              <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="8" y="6" width="24" height="32" rx="2" stroke="#f0f0f0" stroke-width="1.5" fill="none"/>
+                <line x1="14" y1="28" x2="30" y2="12" stroke="#e74c3c" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="30" cy="12" r="2" fill="#e74c3c"/>
+                <line x1="13" y1="14" x2="25" y2="14" stroke="#555" stroke-width="1"/>
+                <line x1="13" y1="19" x2="25" y2="19" stroke="#555" stroke-width="1"/>
+                <line x1="13" y1="24" x2="20" y2="24" stroke="#555" stroke-width="1"/>
+                <rect x="28" y="30" width="6" height="6" fill="#c0392b" opacity="0.6"/>
+              </svg>
+            </div>
+            <div class="shift-menu-btn-title">Новый отчёт</div><div class="shift-menu-btn-sub">Заполнить форму</div>
+            <svg class="shift-menu-arrow" viewBox="0 0 20 20" fill="none"><path d="M5 10 L15 10 M10 5 L15 10 L10 15" stroke="#e74c3c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="shift-menu-btn" onclick="showShiftsView('history')">
+            <div class="shift-menu-icon">
+              <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="10" y="10" width="24" height="28" rx="2" stroke="#f0f0f0" stroke-width="1.5" fill="none"/>
+                <rect x="14" y="6" width="16" height="6" rx="1" stroke="#f0f0f0" stroke-width="1.5" fill="none"/>
+                <line x1="15" y1="18" x2="29" y2="18" stroke="#555" stroke-width="1"/>
+                <line x1="15" y1="23" x2="29" y2="23" stroke="#555" stroke-width="1"/>
+                <line x1="15" y1="28" x2="25" y2="28" stroke="#555" stroke-width="1"/>
+                <line x1="15" y1="33" x2="27" y2="33" stroke="#555" stroke-width="1"/>
+                <circle cx="32" cy="32" r="4" fill="#c0392b" opacity="0.6"/>
+              </svg>
+            </div>
+            <div class="shift-menu-btn-title">История отчётов</div><div class="shift-menu-btn-sub" id="historyCount">0 записей</div>
+            <svg class="shift-menu-arrow" viewBox="0 0 20 20" fill="none"><path d="M5 10 L15 10 M10 5 L15 10 L10 15" stroke="#e74c3c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="shiftsNewView" style="display:none;">
+      <div class="section">
+        <button class="back-btn" onclick="showShiftsView('menu')">← Назад к меню</button>
+        <div class="section-title">Новый отчёт</div>
+        <div class="card">
+          <div class="form-group"><label class="form-label">Модель</label><select class="form-select" id="shiftStreamer"><option value="">Выберите модель</option></select></div>
+          <div class="form-group"><label class="form-label">Дата смены</label><input type="date" class="form-input" id="shiftDate"></div>
+          <div class="form-group"><label class="form-label">Заработок ($)</label><input type="number" class="form-input" id="shiftEarning" placeholder="0.00" step="0.01"></div>
+        </div>
+        <div class="platform-section">
+          <div class="platform-header">
+            <div class="platform-logo cb">
+              <svg width="30" height="30" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <path d="M 72 22 C 62 14 48 14 38 22 C 28 30 24 44 26 58 C 28 72 38 82 52 84 C 62 85 70 80 74 72" stroke="#1a5276" stroke-width="10" stroke-linecap="round" fill="none"/>
+                <path d="M 72 22 C 62 14 48 14 38 22 C 28 30 24 44 26 58 C 28 72 38 82 52 84 C 62 85 70 80 74 72" stroke="#F39C12" stroke-width="7" stroke-linecap="round" fill="none"/>
+                <path d="M 72 22 C 78 18 82 20 84 24" stroke="#1a5276" stroke-width="10" stroke-linecap="round" fill="none"/>
+                <path d="M 72 22 C 78 18 82 20 84 24" stroke="#F39C12" stroke-width="7" stroke-linecap="round" fill="none"/>
+              </svg>
+            </div>
+            Chaturbate
+          </div>
+          <div class="form-group"><label class="form-label">Подписчики</label><input type="number" class="form-input" id="cbSubs" placeholder="0"></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Лайки стрима</label><input type="number" class="form-input" id="cbLikes" placeholder="0"></div>
+            <div class="form-group"><label class="form-label">Дизлайки стрима</label><input type="number" class="form-input" id="cbDislikes" placeholder="0"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Макс. онлайн</label><input type="number" class="form-input" id="cbMaxOnline" placeholder="0"></div>
+            <div class="form-group"><label class="form-label">Макс. рейтинг</label><input type="number" class="form-input" id="cbMaxRating" placeholder="0"></div>
+          </div>
+        </div>
+        <div class="platform-section">
+          <div class="platform-header">
+            <div class="platform-logo sc">
+              <svg width="30" height="30" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <path d="M 50 10 C 25 10 10 28 10 48 C 10 62 18 74 30 84 C 34 87 36 90 34 94 L 28 102 L 42 96 C 44 95 47 95 50 95 C 75 95 90 72 90 48 C 90 28 75 10 50 10 Z" fill="#C0392B"/>
+                <path d="M 32 42 L 68 42 L 54 58 L 54 72 L 46 72 L 46 58 Z" fill="white"/>
+              </svg>
+            </div>
+            Stripchat
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Подписчики</label><input type="number" class="form-input" id="scSubs" placeholder="0"></div>
+            <div class="form-group"><label class="form-label">StripScore</label><input type="number" class="form-input" id="scScore" placeholder="0"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Макс. онлайн</label><input type="number" class="form-input" id="scMaxOnline" placeholder="0"></div>
+            <div class="form-group"><label class="form-label">Макс. рейтинг</label><input type="number" class="form-input" id="scMaxRating" placeholder="0"></div>
+          </div>
+        </div>
+        <div class="card"><div class="form-group" style="margin-bottom:0;"><label class="form-label">Комментарий к смене</label><textarea class="form-textarea" id="shiftComment" placeholder="Опишите что было на смене, любые нюансы..."></textarea></div></div>
+        <div class="file-upload-area" id="fileUploadArea" onclick="document.getElementById('fileInput').click()">
+          <div class="file-upload-icon">📎</div><div class="file-upload-text">Прикрепить файлы</div>
+          <div class="file-upload-hint">Прикрепи скриншот результатов с каждого рабочего сайта и два скриншота CB Hours.</div>
+          <input type="file" class="file-upload-input" id="fileInput" multiple accept="image/*" onchange="handleFiles(this.files)">
+          <div class="file-preview-list" id="filePreviewList"></div>
+        </div>
+        <button class="submit-btn" id="submitBtn" onclick="submitShift()" disabled>Отправить отчёт</button>
+      </div>
+    </div>
+    <div id="shiftsHistoryView" style="display:none;">
+      <div class="section">
+        <button class="back-btn" onclick="showShiftsView('menu')">← Назад к меню</button>
+        <div class="section-title">История отчётов</div>
+        <div class="history-filters">
+          <select class="history-filter-select" id="filterMonth" onchange="renderHistory()">
+            <option value="all">Все месяцы</option>
+            <option value="0">Январь</option><option value="1">Февраль</option><option value="2">Март</option><option value="3">Апрель</option>
+            <option value="4">Май</option><option value="5">Июнь</option><option value="6">Июль</option><option value="7">Август</option>
+            <option value="8">Сентябрь</option><option value="9">Октябрь</option><option value="10">Ноябрь</option><option value="11">Декабрь</option>
+          </select>
+          <select class="history-filter-select" id="filterModel" onchange="renderHistory()"><option value="all">Все модели</option></select>
+        </div>
+        <div id="historyList"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-income">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-value green" id="incomeTurnover">$0</div><div class="stat-label">Оборот</div></div>
+      <div class="stat-card"><div class="stat-value white" id="incomeTotal">$0</div><div class="stat-label">Всего заработано</div></div>
+      <div class="stat-card"><div class="stat-value red" id="incomeShifts">0</div><div class="stat-label">Смены</div></div>
+    </div>
+
+    <!-- ДИНАМИКА СТАТИСТИКИ (только заработок) -->
+    <div class="section">
+      <div class="stats-chart-card">
+        <div class="stats-chart-title">Динамика заработка</div>
+        <div class="period-row">
+          <button class="period-btn" data-period="day" onclick="setChartPeriod('day', this)">День</button>
+          <button class="period-btn" data-period="week" onclick="setChartPeriod('week', this)">Неделя</button>
+          <button class="period-btn" data-period="month" onclick="setChartPeriod('month', this)">Месяц</button>
+          <button class="period-btn active" data-period="all" onclick="setChartPeriod('all', this)">Всё время</button>
+        </div>
+        <div class="sub-select-row" id="periodSelectRow">
+          <span class="sub-select-label" id="periodSelectLabel">Выберите день</span>
+          <select class="sub-select" id="periodSelect" onchange="onPeriodSelectChange()"></select>
+        </div>
+        <div class="view-row">
+          <button class="view-btn active" data-view="all" onclick="setChartView('all', this)">Вся статистика</button>
+          <button class="view-btn" data-view="model" onclick="setChartView('model', this)">Выбор модели</button>
+        </div>
+        <div class="sub-select-row" id="modelSelectRow">
+          <span class="sub-select-label">Модель</span>
+          <select class="sub-select" id="chartModelSelect" onchange="renderChart()"><option value="">Выберите модель</option></select>
+        </div>
+        <div class="chart-area" id="chartArea"><div class="chart-empty">Нет данных для отображения</div></div>
+        <div class="chart-summary">
+          <div class="chart-summary-item"><div class="chart-summary-val green" id="sumTotal">$0</div><div class="chart-summary-label">Всего</div></div>
+          <div class="chart-summary-item"><div class="chart-summary-val white" id="sumAvg">$0</div><div class="chart-summary-label">Среднее</div></div>
+          <div class="chart-summary-item"><div class="chart-summary-val white" id="sumMax">$0</div><div class="chart-summary-label">Максимум</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ПАНЕЛЬ КОЛОНОК -->
+    <div class="section">
+      <div class="table-controls-card">
+        <div class="table-controls-title">Дополнительные колонки</div>
+        <div class="column-chips" id="columnChips"></div>
+        <div class="table-actions">
+          <button class="table-action-btn" onclick="selectAllColumns()">Все</button>
+          <button class="table-action-btn" onclick="selectMainColumns()">Основные</button>
+          <button class="table-action-btn" onclick="selectCBColumns()">Chaturbate</button>
+          <button class="table-action-btn" onclick="selectSCColumns()">Stripchat</button>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <div class="table-scroll">
+          <table class="shifts-table" id="shiftsTable">
+            <thead id="shiftsTableHead"></thead>
+            <tbody id="shiftsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-settings">
+    <div class="section">
+      <div class="wallet-block">
+        <div class="wallet-header"><div class="wallet-label">Кошелёк для выплат (USDT BEP20)</div><button class="wallet-change" onclick="changeWallet()">Изменить</button></div>
+        <div class="wallet-address" id="walletAddress">Не указан</div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="ref-block">
+        <div class="ref-label">Реферальная ссылка</div>
+        <div class="ref-link-box"><div class="ref-link" id="refLink2">https://t.me/AvangardStudiobot?start=REF123</div><button class="ref-copy" onclick="copyRef()">Копировать</button></div>
+        <div class="ref-hint">Зарабатывай до $1000 за каждую приведённую тобой модель!</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="nav-item active" onclick="switchPage('home', this)"><div class="nav-icon-wrap"><div class="nav-icon">⌂</div></div><div class="nav-label">Главная</div></button>
+    <button class="nav-item" onclick="switchPage('shifts', this)"><div class="nav-icon-wrap"><div class="nav-icon">☐</div></div><div class="nav-label">Смены</div></button>
+    <button class="nav-item" onclick="switchPage('income', this)"><div class="nav-icon-wrap"><div class="nav-icon">▤</div></div><div class="nav-label">Доходы</div></button>
+    <button class="nav-item" onclick="switchPage('settings', this)"><div class="nav-icon-wrap"><div class="nav-icon">⚙</div></div><div class="nav-label">Настройки</div></button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="detailModal"><div class="modal" id="detailModalContent"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+var SUPABASE_URL = 'https://vhdaazqauskpyczufotw.supabase.co';
+var SUPABASE_KEY = 'sb_publishable_gofzZ5GQP8JFdO7J9B-srg_tpthZmUr';
+var state = { currentUser: null, streamers: [], shifts: [], wallet: 'Не указан', isDemo: false, supabase: null };
+var attachedFiles = [];
+var currentShiftsView = 'menu';
+var currentChartPeriod = 'all';
+var currentChartPeriodValue = '';
+var currentChartView = 'all';
+
+var BASE_COLUMNS = ['date', 'model', 'earning', 'percent'];
+
+var EXTRA_COLUMN_CONFIG = {
+  cb_subs: { label: 'CB подп.', key: 'cb_subs', group: 'cb', getValue: function(s) { return s.cb_subs || 0; } },
+  cb_likes: { label: 'CB лайки', key: 'cb_likes', group: 'cb', getValue: function(s) { return s.cb_likes || 0; } },
+  cb_dislikes: { label: 'CB дизл.', key: 'cb_dislikes', group: 'cb', getValue: function(s) { return s.cb_dislikes || 0; } },
+  cb_max_online: { label: 'CB макс. онл.', key: 'cb_max_online', group: 'cb', getValue: function(s) { return s.cb_max_online || 0; } },
+  cb_max_rating: { label: 'CB макс. рейт.', key: 'cb_max_rating', group: 'cb', getValue: function(s) { return s.cb_max_rating || 0; } },
+  sc_subs: { label: 'SC подп.', key: 'sc_subs', group: 'sc', getValue: function(s) { return s.sc_subs || 0; } },
+  sc_score: { label: 'StripScore', key: 'sc_score', group: 'sc', getValue: function(s) { return s.sc_score || 0; } },
+  sc_max_online: { label: 'SC макс. онл.', key: 'sc_max_online', group: 'sc', getValue: function(s) { return s.sc_max_online || 0; } },
+  sc_max_rating: { label: 'SC макс. рейт.', key: 'sc_max_rating', group: 'sc', getValue: function(s) { return s.sc_max_rating || 0; } }
+};
+
+var ALL_COLUMN_CONFIG = {
+  date: { label: 'Дата', getValue: function(s) { return s.shift_date || s.date || '—'; } },
+  model: { label: 'Модель', getValue: function(s) { return getStreamerName(s.streamer_id); } },
+  earning: { label: 'Заработок', getValue: function(s) { return '$' + s.earning.toFixed(2); }, class: 'val-green' },
+  percent: { label: '%', getValue: function(s) { return getPercentForShift(s) + '%'; }, class: 'val-red' }
+};
+Object.keys(EXTRA_COLUMN_CONFIG).forEach(function(k) { ALL_COLUMN_CONFIG[k] = EXTRA_COLUMN_CONFIG[k]; });
+
+var activeExtraColumns = [];
+var sortColumn = null;
+var sortDirection = 'desc';
+
+var MONTHS_FULL = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+var MONTHS_SHORT = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
+
+function getPercentForShift(s) {
+  var allSorted = state.shifts.slice().sort(function(a, b) { return new Date(a.shift_date || a.date) - new Date(b.shift_date || b.date); });
+  var before = 0;
+  for (var i = 0; i < allSorted.length; i++) {
+    if (allSorted[i].streamer_id === s.streamer_id && allSorted[i].id < s.id) before += allSorted[i].earning;
+  }
+  return getPercentForAmount(before);
+}
+
+function setStatus(t){var e=document.getElementById('loadingStatus');if(e)e.textContent=t;}
+function hideLoading(){document.getElementById('loadingScreen').style.display='none';document.getElementById('mainApp').style.display='block';}
+function showToast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2500);}
+
+async function initApp(){
+  try{
+    setStatus('Проверка доступа...');
+    var tg=window.Telegram&&window.Telegram.WebApp; var telegramUser=null;
+    if(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user){telegramUser=tg.initDataUnsafe.user;}
+    else{telegramUser={id:999999999,username:'demo_operator',first_name:'Демо'};state.isDemo=true;}
+    if(!state.isDemo){
+      setStatus('Подключение к базе...');
+      state.supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+      var result=await state.supabase.from('users').select('*').eq('telegram_id',telegramUser.id).single();
+      if(result.error||!result.data){setStatus('Доступ запрещён. Обратитесь к @AvangardoAgency');document.getElementById('loadingSpinner').style.display='none';return;}
+      state.currentUser=result.data;
+    }else{state.currentUser={id:999,telegram_username:'demo_operator',role:'operator',ref_code:'DEMO1'};loadDemoData();}
+    setupUI();await loadData();hideLoading();render();
+  }catch(err){console.error('Init error:',err);setStatus('Ошибка: '+err.message);document.getElementById('loadingSpinner').style.display='none';}
+}
+
+function loadDemoData(){try{var s=localStorage.getItem('avangard_demo');if(s){var d=JSON.parse(s);state.streamers=d.streamers||[];state.shifts=d.shifts||[];state.wallet=d.wallet||'Не указан';}}catch(e){}}
+function saveDemoData(){if(state.isDemo){try{localStorage.setItem('avangard_demo',JSON.stringify({streamers:state.streamers,shifts:state.shifts,wallet:state.wallet}));}catch(e){}}}
+
+function setupUI(){
+  var u=state.currentUser; var name=u.telegram_username||('User_'+u.telegram_id);
+  document.getElementById('userName').textContent=name;
+  document.getElementById('userAvatar').textContent=name.charAt(0).toUpperCase();
+  document.getElementById('userRole').textContent=u.role==='admin'?'Администратор':'Оператор';
+  var b=document.getElementById('statusBadge');
+  if(state.isDemo){b.textContent='DEMO';b.className='status-badge demo';}else{b.textContent='ONLINE';b.className='status-badge online';}
+}
+
+async function loadData(){
+  if(state.isDemo)return;
+  try{
+    var s=await state.supabase.from('streamers').select('*').eq('operator_id',state.currentUser.id);state.streamers=s.data||[];
+    var sh=await state.supabase.from('shifts').select('*').eq('operator_id',state.currentUser.id).order('created_at',{ascending:false});state.shifts=sh.data||[];
+  }catch(e){console.error('Load error:',e);}
+}
+
+function getPercentForAmount(a){if(a>=3000)return 25;if(a>=2000)return 22.5;return 20;}
+function getNextTierInfo(c){if(c<2000)return{nextPercent:22.5,remaining:2000-c};if(c<3000)return{nextPercent:25,remaining:3000-c};return{nextPercent:25,remaining:0,maxed:true};}
+
+function getCurrentPeriodInfo(){
+  var today=new Date();var day=today.getDate();var currentMonth=MONTHS_FULL[today.getMonth()];
+  var periodStart,periodEnd,payoutDay,payoutMonth,daysInPeriod,daysPassed,daysRemaining;
+  if(day<=15){periodStart=1;periodEnd=15;payoutDay=18;payoutMonth=currentMonth;daysInPeriod=15;daysPassed=day;daysRemaining=15-day;}
+  else{periodStart=16;var lastDay=new Date(today.getFullYear(),today.getMonth()+1,0).getDate();periodEnd=lastDay;payoutDay=3;payoutMonth=MONTHS_FULL[(today.getMonth()+1)%12];daysInPeriod=lastDay-15;daysPassed=day-15;daysRemaining=lastDay-day;}
+  return{periodStart:periodStart,periodEnd:periodEnd,payoutDay:payoutDay,payoutMonth:payoutMonth,daysInPeriod:daysInPeriod,daysPassed:daysPassed,daysRemaining:daysRemaining,currentMonth:currentMonth,today:today};
+}
+
+function isShiftInCurrentPeriod(shift,pi){
+  var sDate=new Date(shift.shift_date||shift.date);if(isNaN(sDate.getTime()))return false;
+  var sDay=sDate.getDate();var sMonth=sDate.getMonth();var tMonth=pi.today.getMonth();var tYear=pi.today.getFullYear();
+  if(sMonth!==tMonth||sDate.getFullYear()!==tYear)return false;
+  if(pi.periodStart===1)return sDay>=1&&sDay<=15;return sDay>=16;
+}
+
+function calculatePeriodEarnings(pi){
+  var periodTurnover=0,periodAgentIncome=0,totalAgentIncome=0;
+  var sorted=state.shifts.slice().sort(function(a,b){return new Date(a.shift_date||a.date)-new Date(b.shift_date||b.date);});
+  for(var i=0;i<sorted.length;i++){var s=sorted[i];var before=0;
+    for(var j=0;j<i;j++){if(sorted[j].streamer_id===s.streamer_id)before+=sorted[j].earning;}
+    var p=getPercentForAmount(before);var inc=s.earning*(p/100);totalAgentIncome+=inc;
+    if(isShiftInCurrentPeriod(s,pi)){periodTurnover+=s.earning;periodAgentIncome+=inc;}
+  }
+  return{periodTurnover:periodTurnover,periodAgentIncome:periodAgentIncome,totalAgentIncome:totalAgentIncome};
+}
+
+function getStreamerName(id){for(var i=0;i<state.streamers.length;i++){if(state.streamers[i].id===id)return state.streamers[i].name;}return 'Модель';}
+
+function render(){
+  var pi=getCurrentPeriodInfo();var earnings=calculatePeriodEarnings(pi);
+  var totalTurnover=0;for(var i=0;i<state.shifts.length;i++)totalTurnover+=state.shifts[i].earning;
+  document.getElementById('totalBalance').textContent='$'+earnings.totalAgentIncome.toFixed(2);
+  document.getElementById('statStreamers').textContent=state.streamers.length;
+  document.getElementById('statTotalEarned').textContent='$'+earnings.totalAgentIncome.toFixed(0);
+  var cp=getPercentForAmount(earnings.periodTurnover);
+  document.getElementById('statPercent').textContent=cp+'%';
+  document.getElementById('payPeriodDates').textContent=pi.periodStart+' - '+pi.periodEnd+' '+pi.currentMonth;
+  var dt='';if(pi.daysRemaining===0)dt='Последний день!';else if(pi.daysRemaining===1)dt='Остался 1 день';else dt='Осталось '+pi.daysRemaining+' дн.';
+  document.getElementById('payDaysLeft').textContent=dt;
+  document.getElementById('payAmount').textContent='$'+earnings.periodAgentIncome.toFixed(2);
+  document.getElementById('payDateText').textContent=pi.payoutDay+' '+pi.payoutMonth;
+  var pp=Math.min(100,Math.round((pi.daysPassed/pi.daysInPeriod)*100));
+  document.getElementById('payProgressFill').style.width=pp+'%';
+  document.getElementById('payProgressText').textContent='Осталось '+pi.daysRemaining+' дн. из '+pi.daysInPeriod;
+  var ti=getNextTierInfo(earnings.periodTurnover);
+  document.getElementById('percentCurrentValue').textContent=cp+'%';
+  document.getElementById('percentTurnover').textContent='$'+earnings.periodTurnover.toFixed(2);
+  if(ti.maxed){document.getElementById('percentNextBadge').textContent='Максимум';document.getElementById('percentNextAmount').textContent='Максимальный уровень';}
+  else{document.getElementById('percentNextBadge').textContent='до '+ti.nextPercent+'%';document.getElementById('percentNextAmount').textContent='до след. уровня: $'+ti.remaining.toFixed(0);}
+  var tiers=document.getElementById('percentTiers');tiers.innerHTML='';var tl=[20,22.5,25];
+  for(var t=0;t<3;t++){var div=document.createElement('div');div.className='percent-tier';if(cp>=tl[t])div.classList.add('active');tiers.appendChild(div);}
+  var teamList=document.getElementById('teamList');
+  if(state.streamers.length===0){teamList.innerHTML='<div class="models-empty"><div class="models-empty-icon">⏳</div><div class="models-empty-title">Мы сейчас подбираем тебе модель</div><div class="models-empty-text">Скоро вы начнете зарабатывать!<br>Ожидайте назначения в личном чате.</div></div>';}
+  else{var html='';for(var i=0;i<state.streamers.length;i++){var st=state.streamers[i];var stShifts=[];for(var j=0;j<state.shifts.length;j++){if(state.shifts[j].streamer_id===st.id)stShifts.push(state.shifts[j]);}var stTotal=0;for(var j=0;j<stShifts.length;j++)stTotal+=stShifts[j].earning;var stPercent=getPercentForAmount(stTotal);var stIncome=0;for(var j=0;j<stShifts.length;j++){var before=0;for(var k=0;k<j;k++)before+=stShifts[k].earning;stIncome+=stShifts[j].earning*(getPercentForAmount(before)/100);}html+='<div class="team-card"><div class="team-header"><div class="team-name">'+st.name+'</div><div class="team-percent">'+stPercent+'%</div></div><div class="team-stats"><div class="team-stat"><div class="team-stat-val green">$'+stIncome.toFixed(2)+'</div><div class="team-stat-label">Ваш доход</div></div><div class="team-stat"><div class="team-stat-val white">'+stShifts.length+'</div><div class="team-stat-label">Смен</div></div><div class="team-stat"><div class="team-stat-val red">$'+stTotal.toFixed(0)+'</div><div class="team-stat-label">Оборот</div></div></div></div>';}teamList.innerHTML=html;}
+  var sel=document.getElementById('shiftStreamer');sel.innerHTML='<option value="">Выберите модель</option>';
+  for(var i=0;i<state.streamers.length;i++)sel.innerHTML+='<option value="'+state.streamers[i].id+'">'+state.streamers[i].name+'</option>';
+  document.getElementById('historyCount').textContent=state.shifts.length+' записей';
+  var fm=document.getElementById('filterModel');fm.innerHTML='<option value="all">Все модели</option>';
+  for(var i=0;i<state.streamers.length;i++)fm.innerHTML+='<option value="'+state.streamers[i].id+'">'+state.streamers[i].name+'</option>';
+  var cms=document.getElementById('chartModelSelect');cms.innerHTML='<option value="">Выберите модель</option>';
+  for(var i=0;i<state.streamers.length;i++)cms.innerHTML+='<option value="'+state.streamers[i].id+'">'+state.streamers[i].name+'</option>';
+  document.getElementById('incomeTurnover').textContent='$'+totalTurnover.toFixed(2);
+  document.getElementById('incomeTotal').textContent='$'+earnings.totalAgentIncome.toFixed(2);
+  document.getElementById('incomeShifts').textContent=state.shifts.length;
+  var refCode=state.currentUser.ref_code||'REF123';var refUrl='https://t.me/AvangardStudiobot?start='+refCode;
+  document.getElementById('refLink').textContent=refUrl;document.getElementById('refLink2').textContent=refUrl;
+  document.getElementById('walletAddress').textContent=state.wallet;
+  updateSubmitBtn();renderHistory();populatePeriodSelect();renderChart();renderColumnChips();renderShiftsTable();
+}
+
+function showShiftsView(view){currentShiftsView=view;document.getElementById('shiftsMenuView').style.display=view==='menu'?'block':'none';document.getElementById('shiftsNewView').style.display=view==='new'?'block':'none';document.getElementById('shiftsHistoryView').style.display=view==='history'?'block':'none';if(view==='history')renderHistory();}
+
+function renderHistory(){
+  var list=document.getElementById('historyList');var fm=document.getElementById('filterMonth').value;var fmod=document.getElementById('filterModel').value;
+  var filtered=state.shifts.slice();
+  if(fm!=='all'){var m=parseInt(fm);filtered=filtered.filter(function(s){var d=new Date(s.shift_date||s.date);return !isNaN(d.getTime())&&d.getMonth()===m;});}
+  if(fmod!=='all'){var mid=parseInt(fmod);filtered=filtered.filter(function(s){return s.streamer_id===mid;});}
+  filtered.sort(function(a,b){return new Date(b.shift_date||b.date)-new Date(a.shift_date||a.date);});
+  if(filtered.length===0){list.innerHTML='<div class="models-empty"><div class="models-empty-icon">📋</div><div class="models-empty-title">Нет отчётов</div><div class="models-empty-text">По выбранным фильтрам отчёты не найдены</div></div>';return;}
+  var html='';for(var i=0;i<filtered.length;i++){var s=filtered[i];var dateStr=s.shift_date||s.date||'—';var modelName=getStreamerName(s.streamer_id);var filesCount=s.files_count||0;html+='<div class="history-card" onclick="openShiftDetail('+s.id+')"><div class="history-card-top"><div class="history-card-model">'+modelName+'</div><div class="history-card-date">'+dateStr+'</div></div><div class="history-card-stats"><div class="history-card-stat"><div class="history-card-stat-val green">$'+s.earning.toFixed(2)+'</div><div class="history-card-stat-label">Заработок</div></div><div class="history-card-stat"><div class="history-card-stat-val white">'+(s.cb_subs||0)+'</div><div class="history-card-stat-label">CB подп.</div></div><div class="history-card-stat"><div class="history-card-stat-val white">'+(s.sc_subs||0)+'</div><div class="history-card-stat-label">SC подп.</div></div></div>';if(filesCount>0)html+='<div class="history-card-files">📎 '+filesCount+' файл'+(filesCount>1?(filesCount<5?'а':'ов'):'')+'</div>';html+='</div>';}list.innerHTML=html;
+}
+
+function openShiftDetail(shiftId){
+  var s=null;for(var i=0;i<state.shifts.length;i++){if(state.shifts[i].id===shiftId){s=state.shifts[i];break;}}if(!s)return;
+  var dateStr=s.shift_date||s.date||'—';var modelName=getStreamerName(s.streamer_id);var comment=s.comment||'';var photos=s.photos||[];
+  var html='<div class="modal-header"><div class="modal-title">Детали отчёта</div><button class="modal-close" onclick="closeDetailModal()">✕</button></div>';
+  html+='<div class="detail-row"><div class="detail-row-label">Модель</div><div class="detail-row-value">'+modelName+'</div></div>';
+  html+='<div class="detail-row"><div class="detail-row-label">Дата</div><div class="detail-row-value">'+dateStr+'</div></div>';
+  html+='<div class="detail-row"><div class="detail-row-label">Заработок модели</div><div class="detail-row-value green">$'+s.earning.toFixed(2)+'</div></div>';
+  html+='<div class="detail-section-title">Chaturbate</div>';
+  html+='<div class="detail-row"><div class="detail-row-label">Подписчики</div><div class="detail-row-value">'+(s.cb_subs||0)+'</div></div>';
+  html+='<div class="detail-row"><div class="detail-row-label">Лайки / Дизлайки</div><div class="detail-row-value">'+(s.cb_likes||0)+' / '+(s.cb_dislikes||0)+'</div></div>';
+  html+='<div class="detail-row"><div class="detail-row-label">Макс. онлайн</div><div class="detail-row-value">'+(s.cb_max_online||0)+'</div></div>';
+  html+='<div class="detail-row"><div class="detail-row-label">Макс. рейтинг</div><div class="detail-row-value">'+(s.cb_max_rating||0)+'</div></div>';
+  html+='<div class="detail-section-title">Stripchat</div>';
+  html+='<div class="detail-row"><div class="detail-row-label">Подписчики</div><div class="detail-row-value">'+(s.sc_subs||0)+'</div></div>';
+  html+='<div class="detail-row"><div class="detail-row-label">StripScore</div><div class="detail-row-value">'+(s.sc_score||0)+'</div></div>';
+  html+='<div class="detail-row"><div class="detail-row-label">Макс. онлайн</div><div class="detail-row-value">'+(s.sc_max_online||0)+'</div></div>';
+  html+='<div class="detail-row"><div class="detail-row-label">Макс. рейтинг</div><div class="detail-row-value">'+(s.sc_max_rating||0)+'</div></div>';
+  html+='<div class="detail-section-title">Комментарий к смене</div>';
+  if(comment)html+='<div class="detail-comment">'+comment.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>';else html+='<div class="detail-comment empty">Комментарий не добавлен</div>';
+  if(photos.length>0){html+='<div class="detail-section-title">Прикреплённые файлы ('+photos.length+')</div><div class="detail-photos">';for(var p=0;p<photos.length;p++)html+='<div class="detail-photo" onclick="window.open(\''+photos[p]+'\', \'_blank\')"><img src="'+photos[p]+'"></div>';html+='</div>';}
+  document.getElementById('detailModalContent').innerHTML=html;document.getElementById('detailModal').classList.add('active');
+}
+function closeDetailModal(){document.getElementById('detailModal').classList.remove('active');}
+
+function switchPage(page,btn){
+  var pages=document.querySelectorAll('.page');for(var i=0;i<pages.length;i++)pages[i].classList.remove('active');
+  document.getElementById('page-'+page).classList.add('active');
+  var navs=document.querySelectorAll('.nav-item');for(var i=0;i<navs.length;i++)navs[i].classList.remove('active');
+  btn.classList.add('active');
+  if(page==='shifts')showShiftsView('menu');
+  if(page==='income'){populatePeriodSelect();renderChart();renderColumnChips();renderShiftsTable();}
+}
+
+/* ===== ПЕРИОД ГРАФИКА ===== */
+function setChartPeriod(period,btn){
+  currentChartPeriod=period;
+  var btns=document.querySelectorAll('.period-btn');for(var i=0;i<btns.length;i++)btns[i].classList.remove('active');
+  btn.classList.add('active');
+  var row=document.getElementById('periodSelectRow');
+  if(period==='all'){row.classList.remove('visible');currentChartPeriodValue='';}
+  else{row.classList.add('visible');populatePeriodSelect();}
+  renderChart();
+}
+
+function populatePeriodSelect(){
+  var sel=document.getElementById('periodSelect');
+  var label=document.getElementById('periodSelectLabel');
+  sel.innerHTML='';
+  var now=new Date();
+  if(currentChartPeriod==='day'){
+    label.textContent='Выберите день';
+    var lastDay=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+    var todayStr=now.getFullYear()+'-'+now.getMonth()+'-'+now.getDate();
+    for(var d=lastDay;d>=1;d--){
+      var val=now.getFullYear()+'-'+now.getMonth()+'-'+d;
+      sel.innerHTML+='<option value="'+val+'">'+d+' '+MONTHS_FULL[now.getMonth()]+'</option>';
+    }
+    currentChartPeriodValue=todayStr;
+  } else if(currentChartPeriod==='week'){
+    label.textContent='Выберите неделю';
+    var monthsSet={};
+    monthsSet[now.getFullYear()+'-'+now.getMonth()]=1;
+    for(var i=0;i<state.shifts.length;i++){var d=new Date(state.shifts[i].shift_date||state.shifts[i].date);if(!isNaN(d.getTime()))monthsSet[d.getFullYear()+'-'+d.getMonth()]=1;}
+    var keys=Object.keys(monthsSet).sort(function(a,b){var pa=a.split('-'),pb=b.split('-');return (pb[0]-pa[0])||(pb[1]-pa[1]);});
+    for(var k=0;k<keys.length;k++){
+      var parts=keys[k].split('-');var y=parseInt(parts[0]);var m=parseInt(parts[1]);
+      var last=new Date(y,m+1,0).getDate();
+      var starts=[1,8,15,22,29];
+      for(var w=0;w<starts.length;w++){
+        var s=starts[w];if(s>last)break;var e=Math.min(s+6,last);
+        var val=y+'|'+m+'|'+s+'|'+e;
+        sel.innerHTML+='<option value="'+val+'">'+s+'–'+e+' '+MONTHS_SHORT[m]+' '+y+'</option>';
+      }
+    }
+  } else if(currentChartPeriod==='month'){
+    label.textContent='Выберите месяц';
+    var yearsSet={};yearsSet[now.getFullYear()]=1;
+    for(var i=0;i<state.shifts.length;i++){var d=new Date(state.shifts[i].shift_date||state.shifts[i].date);if(!isNaN(d.getTime()))yearsSet[d.getFullYear()]=1;}
+    var years=Object.keys(yearsSet).map(Number).sort(function(a,b){return b-a;});
+    for(var yIdx=0;yIdx<years.length;yIdx++){
+      var y=years[yIdx];
+      for(var m=11;m>=0;m--){
+        var val=y+'|'+m;
+        sel.innerHTML+='<option value="'+val+'">'+MONTHS_FULL[m]+' '+y+'</option>';
+      }
+    }
+    currentChartPeriodValue=now.getFullYear()+'|'+now.getMonth();
+  }
+  if(currentChartPeriodValue)sel.value=currentChartPeriodValue;
+  else{var first=sel.options[0];if(first){first.selected=true;currentChartPeriodValue=first.value;}}
+}
+
+function onPeriodSelectChange(){
+  currentChartPeriodValue=document.getElementById('periodSelect').value;
+  renderChart();
+}
+
+function setChartView(view,btn){
+  currentChartView=view;
+  var btns=document.querySelectorAll('.view-btn');for(var i=0;i<btns.length;i++)btns[i].classList.remove('active');
+  btn.classList.add('active');
+  var row=document.getElementById('modelSelectRow');
+  if(view==='model')row.classList.add('visible');else row.classList.remove('visible');
+  renderChart();
+}
+
+function shiftMatchesPeriod(s,now){
+  var d=new Date(s.shift_date||s.date);if(isNaN(d.getTime()))return false;
+  if(currentChartPeriod==='all')return true;
+  var v=currentChartPeriodValue;if(!v)return false;
+  if(currentChartPeriod==='day'){var p=v.split('-');return d.getFullYear()===parseInt(p[0])&&d.getMonth()===parseInt(p[1])&&d.getDate()===parseInt(p[2]);}
+  if(currentChartPeriod==='week'){var p=v.split('|');return d.getFullYear()===parseInt(p[0])&&d.getMonth()===parseInt(p[1])&&d.getDate()>=parseInt(p[2])&&d.getDate()<=parseInt(p[3]);}
+  if(currentChartPeriod==='month'){var p=v.split('|');return d.getFullYear()===parseInt(p[0])&&d.getMonth()===parseInt(p[1]);}
+  return false;
+}
+
+/* ===== ГРАФИК ЗАРАБОТКА (единственный) ===== */
+function renderChart(){
+  var chartArea=document.getElementById('chartArea');chartArea.innerHTML='';
+  if(state.shifts.length===0){chartArea.innerHTML='<div class="chart-empty">Нет данных для отображения</div>';setSummary(0,0,0);return;}
+  var now=new Date();
+  var modelFilterId=null;
+  if(currentChartView==='model'){var sv=document.getElementById('chartModelSelect').value;if(sv)modelFilterId=parseInt(sv);}
+  var filtered=state.shifts.filter(function(s){
+    if(modelFilterId!==null&&s.streamer_id!==modelFilterId)return false;
+    return shiftMatchesPeriod(s,now);
+  });
+  if(filtered.length===0){chartArea.innerHTML='<div class="chart-empty">Нет данных за выбранный период</div>';setSummary(0,0,0);return;}
+  
+  // Группировка по дням
+  var dayGroups={};
+  for(var i=0;i<filtered.length;i++){
+    var s=filtered[i];
+    var dateKey=s.shift_date||s.date;
+    if(!dayGroups[dateKey])dayGroups[dateKey]=0;
+    dayGroups[dateKey]+=s.earning;
+  }
+  
+  var dataPoints=[];
+  var keys=Object.keys(dayGroups).sort();
+  for(var i=0;i<keys.length;i++){
+    dataPoints.push({date:keys[i],earning:dayGroups[keys[i]]});
+  }
+  
+  var maxEarning=0;
+  for(var i=0;i<dataPoints.length;i++){if(dataPoints[i].earning>maxEarning)maxEarning=dataPoints[i].earning;}
+  if(maxEarning===0)maxEarning=1;
+  
+  var chartWidth=chartArea.offsetWidth-40;
+  var barWidth=Math.max(12,Math.min(30,Math.floor(chartWidth/dataPoints.length)-4));
+  var spacing=Math.floor(chartWidth/dataPoints.length);
+  
+  for(var i=0;i<dataPoints.length;i++){
+    var d=dataPoints[i];
+    var barHeight=Math.max(4,(d.earning/maxEarning)*150);
+    var leftPos=20+i*spacing+(spacing-barWidth)/2;
+    
+    var bar=document.createElement('div');bar.className='chart-bar';bar.style.left=leftPos+'px';bar.style.height=barHeight+'px';bar.style.width=barWidth+'px';chartArea.appendChild(bar);
+    
+    var vl=document.createElement('div');vl.className='chart-value-label';vl.textContent='$'+d.earning.toFixed(0);vl.style.left=(leftPos+barWidth/2)+'px';vl.style.top=(200-barHeight-18)+'px';chartArea.appendChild(vl);
+    
+    var dl=document.createElement('div');dl.className='chart-bar-label';var dobj=new Date(d.date);
+    dl.textContent=isNaN(dobj.getTime())?d.date.substring(5):(dobj.getDate()+'.'+String(dobj.getMonth()+1).padStart(2,'0'));
+    dl.style.left=(leftPos+barWidth/2)+'px';chartArea.appendChild(dl);
+  }
+  
+  var total=0;for(var i=0;i<dataPoints.length;i++)total+=dataPoints[i].earning;
+  var avg=dataPoints.length?(total/dataPoints.length):0;
+  setSummary(total,avg,maxEarning);
+}
+
+function setSummary(total,avg,max){
+  document.getElementById('sumTotal').textContent='$'+total.toFixed(2);
+  document.getElementById('sumAvg').textContent='$'+avg.toFixed(2);
+  document.getElementById('sumMax').textContent='$'+max.toFixed(2);
+}
+
+/* ===== УПРАВЛЕНИЕ КОЛОНКАМИ ===== */
+function renderColumnChips(){
+  var container=document.getElementById('columnChips');container.innerHTML='';
+  var allExtra=Object.keys(EXTRA_COLUMN_CONFIG);
+  var allBtn=document.createElement('button');allBtn.className='column-chip all-btn'+(activeExtraColumns.length===allExtra.length?' active':'');allBtn.textContent='Все';allBtn.onclick=function(){selectAllColumns();};container.appendChild(allBtn);
+  var keys=Object.keys(EXTRA_COLUMN_CONFIG);
+  for(var i=0;i<keys.length;i++){var key=keys[i];var config=EXTRA_COLUMN_CONFIG[key];var chip=document.createElement('button');chip.className='column-chip'+(activeExtraColumns.indexOf(key)!==-1?' active':'');chip.textContent=config.label;chip.onclick=(function(k){return function(){toggleColumn(k);};})(key);container.appendChild(chip);}
+}
+
+function toggleColumn(key){var idx=activeExtraColumns.indexOf(key);if(idx!==-1){activeExtraColumns.splice(idx,1);}else{activeExtraColumns.push(key);}renderColumnChips();renderShiftsTable();}
+function selectAllColumns(){activeExtraColumns=Object.keys(EXTRA_COLUMN_CONFIG);renderColumnChips();renderShiftsTable();}
+function selectMainColumns(){activeExtraColumns=[];renderColumnChips();renderShiftsTable();}
+function selectCBColumns(){activeExtraColumns=['cb_subs','cb_likes','cb_dislikes','cb_max_online','cb_max_rating'];renderColumnChips();renderShiftsTable();}
+function selectSCColumns(){activeExtraColumns=['sc_subs','sc_score','sc_max_online','sc_max_rating'];renderColumnChips();renderShiftsTable();}
+
+function sortByColumn(key){if(sortColumn===key){sortDirection=sortDirection==='asc'?'desc':'asc';}else{sortColumn=key;sortDirection='desc';}renderShiftsTable();}
+
+function renderShiftsTable(){
+  var thead=document.getElementById('shiftsTableHead');var tbody=document.getElementById('shiftsTableBody');
+  var finalColumns=BASE_COLUMNS.slice().concat(activeExtraColumns);
+  if(state.shifts.length===0){thead.innerHTML='';tbody.innerHTML='<tr><td colspan="'+finalColumns.length+'" style="text-align:center;color:var(--gray2);padding:30px 20px;">Нет отчётов</td></tr>';return;}
+  var headerHtml='<tr>';
+  for(var i=0;i<finalColumns.length;i++){var key=finalColumns[i];var config=ALL_COLUMN_CONFIG[key];var sortClass='';if(sortColumn===key){sortClass=sortDirection==='asc'?'sort-asc':'sort-desc';}headerHtml+='<th class="'+sortClass+'" onclick="sortByColumn(\''+key+'\')">'+config.label+'</th>';}
+  headerHtml+='</tr>';thead.innerHTML=headerHtml;
+  var data=state.shifts.slice();
+  if(sortColumn){data.sort(function(a,b){var config=ALL_COLUMN_CONFIG[sortColumn];var valA=config.getValue(a);var valB=config.getValue(b);var numA=parseFloat(String(valA).replace(/[^0-9.-]/g,''));var numB=parseFloat(String(valB).replace(/[^0-9.-]/g,''));if(!isNaN(numA)&&!isNaN(numB)){return sortDirection==='asc'?numA-numB:numB-numA;}if(sortDirection==='asc')return String(valA).localeCompare(String(valB));return String(valB).localeCompare(String(valA));});}
+  var bodyHtml='';for(var i=0;i<data.length;i++){var s=data[i];bodyHtml+='<tr onclick="openShiftDetail('+s.id+')">';for(var j=0;j<finalColumns.length;j++){var key=finalColumns[j];var config=ALL_COLUMN_CONFIG[key];var value=config.getValue(s);var cls=config.class?' class="'+config.class+'"':'';bodyHtml+='<td'+cls+'>'+value+'</td>';}bodyHtml+='</tr>';}tbody.innerHTML=bodyHtml;
+}
+
+function openAdminChat(){window.open('https://t.me/AvangardoAgency','_blank');}
+function copyRef(){var link=document.getElementById('refLink').textContent;if(navigator.clipboard){navigator.clipboard.writeText(link).then(function(){showToast('Ссылка скопирована');});}else{var ta=document.createElement('textarea');ta.value=link;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('Ссылка скопирована');}}
+function changeWallet(){var addr=prompt('Введите адрес USDT BEP20:');if(addr){state.wallet=addr;document.getElementById('walletAddress').textContent=addr;saveDemoData();showToast('Кошелёк обновлён');}}
+
+function handleFiles(files){for(var i=0;i<files.length;i++){var file=files[i];if(!file.type.startsWith('image/'))continue;var reader=new FileReader();reader.onload=(function(f){return function(e){attachedFiles.push({name:f.name,data:e.target.result});renderFilePreviews();updateSubmitBtn();};})(file);reader.readAsDataURL(file);}document.getElementById('fileInput').value='';}
+function renderFilePreviews(){var list=document.getElementById('filePreviewList');var area=document.getElementById('fileUploadArea');if(attachedFiles.length>0)area.classList.add('has-files');else area.classList.remove('has-files');var html='';for(var i=0;i<attachedFiles.length;i++)html+='<div class="file-preview-item"><img src="'+attachedFiles[i].data+'"><button class="file-preview-remove" onclick="removeFile('+i+')">✕</button></div>';list.innerHTML=html;}
+function removeFile(index){attachedFiles.splice(index,1);renderFilePreviews();updateSubmitBtn();}
+function updateSubmitBtn(){document.getElementById('submitBtn').disabled=attachedFiles.length===0;}
+
+async function submitShift(){
+  var streamerId=parseInt(document.getElementById('shiftStreamer').value);var date=document.getElementById('shiftDate').value;var earning=parseFloat(document.getElementById('shiftEarning').value);
+  if(!streamerId||!date||!earning){showToast('Заполните модель, дату и заработок');return;}
+  var photosData=[];for(var i=0;i<attachedFiles.length;i++)photosData.push(attachedFiles[i].data);
+  var shiftData={operator_id:state.currentUser.id,streamer_id:streamerId,shift_date:date,earning:earning,cb_subs:parseInt(document.getElementById('cbSubs').value)||0,cb_likes:parseInt(document.getElementById('cbLikes').value)||0,cb_dislikes:parseInt(document.getElementById('cbDislikes').value)||0,cb_max_online:parseInt(document.getElementById('cbMaxOnline').value)||0,cb_max_rating:parseInt(document.getElementById('cbMaxRating').value)||0,sc_subs:parseInt(document.getElementById('scSubs').value)||0,sc_score:parseInt(document.getElementById('scScore').value)||0,sc_max_online:parseInt(document.getElementById('scMaxOnline').value)||0,sc_max_rating:parseInt(document.getElementById('scMaxRating').value)||0,comment:document.getElementById('shiftComment').value,files_count:attachedFiles.length,photos:photosData};
+  if(state.isDemo){shiftData.id=Date.now();shiftData.date=date;state.shifts.unshift(shiftData);saveDemoData();}
+  else{try{var result=await state.supabase.from('shifts').insert([shiftData]);if(result.error){showToast('Ошибка: '+result.error.message);return;}state.shifts.unshift(shiftData);}catch(e){showToast('Ошибка отправки');return;}}
+  document.getElementById('shiftStreamer').value='';document.getElementById('shiftDate').value='';document.getElementById('shiftEarning').value='';
+  document.getElementById('cbSubs').value='';document.getElementById('cbLikes').value='';document.getElementById('cbDislikes').value='';
+  document.getElementById('cbMaxOnline').value='';document.getElementById('cbMaxRating').value='';
+  document.getElementById('scSubs').value='';document.getElementById('scScore').value='';
+  document.getElementById('scMaxOnline').value='';document.getElementById('scMaxRating').value='';
+  document.getElementById('shiftComment').value='';attachedFiles=[];renderFilePreviews();
+  showToast('Отчёт отправлен!');render();showShiftsView('menu');
+}
+
+document.getElementById('detailModal').addEventListener('click',function(e){if(e.target===this)closeDetailModal();});
+document.getElementById('shiftDate').valueAsDate=new Date();
+initApp();
+</script>
+</body>
+</html>
